@@ -1,0 +1,81 @@
+package org.example.library
+
+import java.util.Date
+import java.text.SimpleDateFormat
+import java.text.ParseException
+
+class Library {
+	String name
+	
+	// derived feature
+	derived String lastName get {
+		if ( name != null ) {
+			val int index = name.lastIndexOf(".")
+			if ( index != -1 ) {
+				name.substring(index+1)
+			} else {
+				name
+			}
+		}
+	}
+	// contains 는 UML composition 관계이다.(생명주기를 같이 함)
+	contains Book[] books opposite library
+	contains Writer[] writers opposite library
+	
+		// op 메소드 정의
+	op Book getBook(String title) {
+		for ( Book book : books ) {
+			if ( title == book.title ) return book
+		}
+		
+		return null
+	}
+	
+}
+
+class Book {
+	// 북에서 컨테이너 클래스인 라이브러리를 접근하고자 할 경우
+	// opposite 는 DB의 외부키 개념과 비슷한 것 같다
+	container Library library opposite books
+	String title
+	int pages
+	Date copyright
+	
+	BookCategory bookCategory
+	
+	// 크로스레퍼런싱 refers 는 1 대 다 일 경우 설정함
+	// "Writer" has "books"
+	refers Writer[] authors opposite books
+	
+}
+
+class Writer {
+	String name
+	container Library library opposite writers
+	
+	// 크로스레퍼런싱 refers 는 1 대 다 일 경우 설정함
+	// "Book" has "authors"
+	refers Book[] books opposite authors
+}
+
+enum BookCategory {
+	Mystery
+	ScienceFiction
+	Biograpy
+}
+
+type Date wraps Date
+create {
+	try {
+		if ( it != null ) {
+			new SimpleDateFormat("yyyy-MM-dd").parse(it);
+		}
+	} catch ( ParseException exception ) {
+		throw new RuntimeException(exception);
+	}
+}
+convert {
+	if ( it != null ) {
+		new SimpleDateFormat("yyyy-MM-dd").format(it);
+	}
+}
