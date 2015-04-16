@@ -1,0 +1,1 @@
+eclipse xcore library example
